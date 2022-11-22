@@ -6,17 +6,20 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "pairing.pb.h"
 #include "comm.hpp"
 #include "crypto.hpp"
 #include "storage.hpp"
+#include "towncrier/network.grpc.pb.h"
+#include "towncrier/network.pb.h"
 
 class DC_Server
 {
 public:
     DC_Server(const int64_t server_id, const bool is_leader,
-              const std::string storage_path);
+              const std::string storage_path, const std::string tc_svc_name, const std::string tc_addr);
 
     int dc_server_run();
 
@@ -44,6 +47,7 @@ private:
     int64_t server_id;
     bool is_leader;
     Comm comm;
+    TCComm tc_comm;
 
     Storage storage;
     std::mutex storage_mutex;
@@ -80,6 +84,10 @@ private:
     int thread_initiate_pairing();
     int thread_listen_pairing_msg();
     int thread_handle_pairing_msg();
+
+    /* Towncrier */
+    int thread_tc_send();
+    int thread_tc_recv();
 };
 
 #endif // __DCSERVER_H

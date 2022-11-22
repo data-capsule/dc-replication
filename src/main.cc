@@ -3,17 +3,19 @@
 #include <string>
 #include <thread>
 #include <unistd.h>
+#include <iostream>
+#include <cstdlib>
 
 #include "config.h"
 #include "dc_server.hpp"
 #include "dc_client.hpp"
 #include "util/logging.hpp"
 
-int thread_dc_server(int64_t server_id, bool is_leader)
+int thread_dc_server(int64_t server_id, bool is_leader, const std::string tc_svc_name, const std::string tc_addr)
 {
     // DC Server Init
     std::string storage_path = "/tmp/db_" + std::to_string(server_id);
-    DC_Server *dc_server = new DC_Server(server_id, is_leader, storage_path);
+    DC_Server *dc_server = new DC_Server(server_id, is_leader, storage_path, tc_svc_name, tc_addr);
 
     // Run DC Server
     dc_server->dc_server_run();
@@ -48,17 +50,21 @@ int main(int argc, char *argv[])
     3. wait for 10s and start client
     */
     std::vector<std::thread> server_threads;
+    if (argc != 3){
+        std::cerr << "Usage: " << argv[0] << " towncrier_name towncrier_server_address" << std::endl;
+        exit(0);
+    }
 
 #if OUTGOING_MODE == 2
     if (HAS_LEADER_LOCAL)
     {
-        server_threads.push_back(std::thread(thread_dc_server, LEADER_ID_LOCAL, /* is_leader */ true));
+        server_threads.push_back(std::thread(thread_dc_server, LEADER_ID_LOCAL, /* is_leader */ true, argv[1], argv[2]));
     }
 #endif
 
     for (int64_t id = INIT_DC_SERVER_ID; id < LOCAL_DC_SERVER_COUNT + INIT_DC_SERVER_ID; id++)
     {
-        server_threads.push_back(std::thread(thread_dc_server, id, /* is_leader */ false));
+        server_threads.push_back(std::thread(thread_dc_server, id, /* is_leader */ false, argv[1], argv[2]));
     }
 
 #if HAS_LOCAL_DC_CLIENT 

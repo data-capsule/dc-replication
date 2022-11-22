@@ -4,11 +4,20 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 #include <zmq.hpp>
 
 #include "capsule.pb.h"
 #include "pairing.pb.h"
+#include "towncrier/network.grpc.pb.h"
+#include "towncrier/network.pb.h"
+#include <grpc/grpc.h>
+#include <grpcpp/channel.h>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <grpcpp/security/credentials.h>
+
 #include "config.h"
 
 class DC_Server; // Forward Declaration to avoid circular dependency
@@ -74,4 +83,18 @@ private:
     }
 };
 
+
+class TCComm
+{
+public:
+    TCComm(const std::string tc_svc_name, const std::string tc_addr, DC_Server *srv);
+    void send();
+    void recv();
+private:
+    std::string tc_svc_name;
+    std::string tc_addr;
+    std::shared_ptr<grpc::Channel> channel;
+    std::unique_ptr<network::NetworkExchange::Stub> stub;
+    DC_Server *srv;
+};
 #endif // __COMM_H

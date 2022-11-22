@@ -17,13 +17,18 @@
 #include "storage.hpp"
 #include "util/logging.hpp"
 
+
 DC_Server::DC_Server(const int64_t server_id,
                      const bool is_leader,
-                     const std::string storage_path) : server_id(server_id),
-                                                       is_leader(is_leader),
-                                                       storage(Storage(storage_path)),
-                                                       crypto(Crypto()),
-                                                       comm(Comm(NET_DC_SERVER_IP, server_id, is_leader, this))
+                     const std::string storage_path,
+                     const std::string tc_svc_name,
+                     const std::string tc_addr)
+                     :  server_id(server_id),
+                        is_leader(is_leader),
+                        storage(Storage(storage_path)),
+                        crypto(Crypto()),
+                        comm(Comm(NET_DC_SERVER_IP, server_id, is_leader, this)),
+                        tc_comm(TCComm(tc_svc_name, tc_addr, this))
 {
 }
 
@@ -44,11 +49,13 @@ int DC_Server::dc_server_run()
         /* DC Server */
         // thread to receive msg from mcast
         task_threads.push_back(std::thread(&DC_Server::thread_listen_mcast_and_client, this));
+        task_threads.push_back(std::thread(&DC_Server::thread_tc_recv, this));
         // thread to handle msg from mcast, generate ack
         task_threads.push_back(std::thread(&DC_Server::thread_handle_mcast_msg, this));
 #if OUTGOING_MODE == 1
         // thread to send acks to client
         task_threads.push_back(std::thread(&DC_Server::thread_send_ack_to_replyaddr, this));
+        task_threads.push_back(std::thread(&DC_Server::thread_tc_recv, this));
 #elif OUTGOING_MODE == 2
         // thread to send acks to leader
         task_threads.push_back(std::thread(&DC_Server::thread_send_ack_to_leader, this));
@@ -90,6 +97,20 @@ int DC_Server::thread_listen_mcast_and_client()
 
     comm.run_dc_server_listen_mcast_and_client();
 
+    return 0;
+}
+
+int DC_Server::thread_tc_send()
+{
+    Logger::log(LogLevel::INFO, "DC Server starts sending responses over Towncrier, dc server #" + std::to_string(this->server_id));
+    tc_comm.send();
+    return 0;
+}
+
+int DC_Server::thread_tc_recv()
+{
+    Logger::log(LogLevel::INFO, "DC Server starts receiving requests over Towncrier, dc server #" + std::to_string(this->server_id));
+    tc_comm.recv();
     return 0;
 }
 

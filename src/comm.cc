@@ -454,3 +454,76 @@ void Comm::send_dc_server_pairing_response(
 
     return;
 }
+
+
+TCComm::TCComm(const std::string tc_svc_name, const std::string tc_addr, DC_Server *srv)
+    :tc_svc_name(tc_svc_name), tc_addr(tc_addr), srv(srv)
+{
+    channel = grpc::CreateChannel(tc_addr, grpc::InsecureChannelCredentials());
+    stub = network::NetworkExchange::NewStub(channel);
+}
+
+/* @attention: Currently Towncrier ONLY serves requests from CDB and PSL workers.
+ * Communication between replicas is still handled by ZMQ.
+ */
+void TCComm::send()
+{
+    grpc::ClientContext ctx_writer;
+    network::FIN *fin_resp = new network::FIN();
+    std::unique_ptr<grpc::ClientWriter<network::PDU>> writer(stub->Send(&ctx_writer, fin_resp));
+
+    while (true)
+    {
+        std::string out_msg = this->srv->ack_q_dequeue();
+        if (out_msg == "")
+            continue;
+
+        capsule::CapsulePDU out_ack_dc;
+        out_ack_dc.ParseFromString(out_msg);
+
+        const std::string &replyaddr = out_ack_dc.header().replyaddr();
+        Logger::log(LogLevel::DEBUG, "[DC SERVER] sending ack to replying to name: "+ replyaddr);
+
+        network::PDU write_pdu;
+        write_pdu.set_sender(tc_svc_name);
+        write_pdu.set_origin(tc_svc_name);
+        write_pdu.add_fwd_names(replyaddr);
+        write_pdu.add_msg(out_msg);
+
+        writer->write(write_pdu);
+    }
+
+
+    // Unreachable?
+    writer->WritesDone();
+    writer->Finish();
+}
+
+
+void TCComm::recv()
+{
+    grpc::ClientContext ctx_reader;
+    network::SYN *syn_req = new network::SYN();
+    syn_req->set_name(TOWNCRIER_SVC_NAME);
+    std::unique_ptr<grpc::ClientReader<network::PDU>> reader(stub->Recv(&ctx_reader, *syn_req));
+
+    while (true)
+    {
+        network::PDU read_pdu;
+        if (!reader->Read(&read_pdu)){
+            continue;
+        }
+        if (read_pdu.msg_size() == 0){
+            continue;
+        }
+        
+        for (int i = 0; i < read_pdu.msg_size(); i++){
+            // Messages can be batched
+            std::string msg = read_pdu.msg(i)
+            this->srv->serve_req_q_enqueue(msg);
+            Logger::log(LogLevel::DEBUG, "[DC SERVER] Received & put a serve message: " + msg);
+        }
+    }
+
+    reader->Finish();
+}

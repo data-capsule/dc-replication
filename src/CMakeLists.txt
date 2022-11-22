@@ -49,6 +49,7 @@ set(source_files
     dc_client.hpp dc_client.cc
     client_comm.hpp client_comm.cc
     benchmark.h
+    towncrier/network.pb.h towncrier/network.pb.cc towncrier/network.grpc.pb.h towncrier/network.grpc.pb.cc
 )
 
 # Protobuf
