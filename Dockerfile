@@ -1,6 +1,4 @@
-ARG debian_snapshot=buster-20201012
-
-FROM debian/snapshot:${debian_snapshot}
+FROM grpc/cxx
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -21,5 +19,8 @@ RUN mkdir /opt/cmake
 RUN sh /cmake-3.20.4-linux-x86_64.sh --prefix=/opt/cmake --skip-license
 RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 RUN cmake --version
+
+RUN mkdir -p /opt/dc_server
+WORKDIR /opt/dc_server
 
 CMD ["/bin/bash"]

@@ -2,26 +2,20 @@
 DataCapsule Replication for Paranoid Stateful Lambda (PSL) / Global Data Plane (GDP)
 
 # How to build and run
-Clone dc-replication repo
-```
-MY_PROJECT=~/dc-replication
-git clone --recursive git@github.com:hanming-lu/dc-replication.git "${MY_PROJECT}"
+
+Run all commands on this directory.
+
+```bash
+docker build -t dc-server .
+docker run -it --rm --net=host -v .:/opt/dc_server dc_server /bin/bash
 ```
 
-Start docker (assuming docker is installed)
-```
-docker run -it --rm \
-  --net=host \
-  -v "${MY_PROJECT}":/opt/my-project \
-  -w /opt/my-project \
-  hanmingl/dc-replication:1.0
-```
+Then inside container:
 
-After entering the docker, build and run dcr-server within docker
-```
+```bash
 mkdir -p build/ && cd build/
 cmake ../src/
 make -j4
 
-./dcr-server
+./dc-server
 ```
