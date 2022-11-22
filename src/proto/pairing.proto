@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package capsule;
 
@@ -9,7 +9,7 @@ message PairingRequest {
   repeated string sources = 1;
   repeated string sinks = 2;
 
-  optional string replyAddr = 3;
+  string replyAddr = 3;
 
   repeated string hashes = 4; // Used for base line anti-entropy
 }

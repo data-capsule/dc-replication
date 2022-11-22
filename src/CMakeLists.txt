@@ -17,6 +17,7 @@ find_package(Protobuf REQUIRED)
 find_package(PkgConfig)
 ## use pkg-config to get hints for 0mq locations
 pkg_check_modules(PC_ZeroMQ QUIET zmq)
+pkg_check_modules(PC_gRPC QUIET IMPORTED_TARGET grpc++)
 
 # Openssl
 find_package(OpenSSL REQUIRED)
@@ -32,6 +33,9 @@ find_library(ZeroMQ_LIBRARY
         NAMES zmq
         PATHS ${PC_ZeroMQ_LIBRARY_DIRS}
         )
+
+
+
 
 set(source_files
     main.cc
@@ -60,11 +64,12 @@ add_executable(${PROJECT_NAME} ${source_files} ${PROTO_SRCS} ${PROTO_HDRS})
 # RocksDB
 add_subdirectory(${CMAKE_SOURCE_DIR}/../third_party/rocksdb third_party/rocksdb)
 include_directories(${CMAKE_SOURCE_DIR}/../third_party/rocksdb/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${ZeroMQ_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${ZeroMQ_INCLUDE_DIR} PUBLIC ${PC_gRPC_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   protobuf::libprotobuf
   rocksdb
   ${ZeroMQ_LIBRARY}
   OpenSSL::SSL OpenSSL::Crypto
+  PkgConfig::PC_gRPC
 )

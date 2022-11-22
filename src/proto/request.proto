@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package capsule;
 
@@ -6,22 +6,22 @@ import "capsule.proto";
 
 message ClientGetRequest {
 
-  optional bytes hash = 1;
-  optional string replyAddr = 2;
+  bytes hash = 1;
+  string replyAddr = 2;
 
-  optional bool fresh_req = 3;
+  bool fresh_req = 3;
 
 }
 
 message ClientGetResponse {
 
-  optional bool success = 1;
-  optional bytes hash = 2;
-  optional CapsulePDU record = 3;
+  bool success = 1;
+  bytes hash = 2;
+  CapsulePDU record = 3;
 
-  optional string targetAddr = 4;
+  string targetAddr = 4;
 
-  optional bool fresh_resp = 5;
+  bool fresh_resp = 5;
   repeated bytes fresh_hashes = 6;
 
 }
