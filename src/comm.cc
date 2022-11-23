@@ -490,7 +490,7 @@ void TCComm::send()
         write_pdu.add_fwd_names(replyaddr);
         write_pdu.add_msg(out_msg);
 
-        writer->write(write_pdu);
+        writer->Write(write_pdu);
     }
 
 
@@ -504,7 +504,7 @@ void TCComm::recv()
 {
     grpc::ClientContext ctx_reader;
     network::SYN *syn_req = new network::SYN();
-    syn_req->set_name(TOWNCRIER_SVC_NAME);
+    syn_req->set_name(tc_svc_name);
     std::unique_ptr<grpc::ClientReader<network::PDU>> reader(stub->Recv(&ctx_reader, *syn_req));
 
     while (true)
@@ -519,7 +519,7 @@ void TCComm::recv()
         
         for (int i = 0; i < read_pdu.msg_size(); i++){
             // Messages can be batched
-            std::string msg = read_pdu.msg(i)
+            std::string msg = read_pdu.msg(i);
             this->srv->serve_req_q_enqueue(msg);
             Logger::log(LogLevel::DEBUG, "[DC SERVER] Received & put a serve message: " + msg);
         }
