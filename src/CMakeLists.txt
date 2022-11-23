@@ -64,7 +64,7 @@ add_executable(${PROJECT_NAME} ${source_files} ${PROTO_SRCS} ${PROTO_HDRS})
 
 # RocksDB
 add_subdirectory(${CMAKE_SOURCE_DIR}/../third_party/rocksdb third_party/rocksdb)
-include_directories(${CMAKE_SOURCE_DIR}/../third_party/rocksdb/include)
+include_directories(${CMAKE_SOURCE_DIR}/../third_party/rocksdb/include ${PC_gRPC_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${ZeroMQ_INCLUDE_DIR} PUBLIC ${PC_gRPC_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
