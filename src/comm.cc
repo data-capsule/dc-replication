@@ -494,6 +494,7 @@ void TCComm::send_ack()
         write_pdu.set_sender(tc_svc_name);
         write_pdu.set_origin(tc_svc_name);
         write_pdu.add_fwd_names(replyaddr);
+        write_pdu.add_msg(std::string("ACK"));
         write_pdu.add_msg(out_msg);
 
         {
@@ -526,6 +527,7 @@ void TCComm::send_reply()
         write_pdu.set_sender(tc_svc_name);
         write_pdu.set_origin(tc_svc_name);
         write_pdu.add_fwd_names(replyaddr);
+        write_pdu.add_msg(std::string("REPLY"));
         write_pdu.add_msg(out_msg);
 
         {
