@@ -55,7 +55,8 @@ int DC_Server::dc_server_run()
 #if OUTGOING_MODE == 1
         // thread to send acks to client
         task_threads.push_back(std::thread(&DC_Server::thread_send_ack_to_replyaddr, this));
-        task_threads.push_back(std::thread(&DC_Server::thread_tc_recv, this));
+        task_threads.push_back(std::thread(&DC_Server::thread_tc_send_ack, this));
+        task_threads.push_back(std::thread(&DC_Server::thread_tc_send_reply, this));
 #elif OUTGOING_MODE == 2
         // thread to send acks to leader
         task_threads.push_back(std::thread(&DC_Server::thread_send_ack_to_leader, this));
@@ -100,10 +101,17 @@ int DC_Server::thread_listen_mcast_and_client()
     return 0;
 }
 
-int DC_Server::thread_tc_send()
+int DC_Server::thread_tc_send_ack()
 {
-    Logger::log(LogLevel::INFO, "DC Server starts sending responses over Towncrier, dc server #" + std::to_string(this->server_id));
-    tc_comm.send();
+    Logger::log(LogLevel::INFO, "DC Server starts sending acks over Towncrier, dc server #" + std::to_string(this->server_id));
+    tc_comm.send_ack();
+    return 0;
+}
+
+int DC_Server::thread_tc_send_reply()
+{
+    Logger::log(LogLevel::INFO, "DC Server starts sending replies over Towncrier, dc server #" + std::to_string(this->server_id));
+    tc_comm.send_reply();
     return 0;
 }
 

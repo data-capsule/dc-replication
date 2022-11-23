@@ -26,7 +26,7 @@ RUN cmake -DgRPC_INSTALL=ON \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ \
     ../..
 
-RUN make -j
+RUN make
 RUN make install
 
 #install cmake v3.20.4

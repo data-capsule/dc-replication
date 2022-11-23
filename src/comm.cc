@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <mutex>
+
 #include <zmq.hpp>
 
 #include "capsule.pb.h"
@@ -423,6 +425,8 @@ void Comm::send_dc_server_pairing_request_baseline(std::unordered_set<std::strin
     return;
 }
 
+std::mutex writer_m;
+
 void Comm::send_dc_server_pairing_response(
     std::vector<capsule::CapsulePDU> &records_to_return,
     const std::string &reply_addr)
@@ -461,16 +465,18 @@ TCComm::TCComm(const std::string tc_svc_name, const std::string tc_addr, DC_Serv
 {
     channel = grpc::CreateChannel(tc_addr, grpc::InsecureChannelCredentials());
     stub = network::NetworkExchange::NewStub(channel);
+
+    grpc::ClientContext ctx_writer;
+    network::FIN *fin_resp = new network::FIN();
+    std::shared_ptr<grpc::ClientWriter<network::PDU>> __writer(stub->Send(&ctx_writer, fin_resp));
+    writer = __writer;
 }
 
 /* @attention: Currently Towncrier ONLY serves requests from CDB and PSL workers.
  * Communication between replicas is still handled by ZMQ.
  */
-void TCComm::send()
+void TCComm::send_ack()
 {
-    grpc::ClientContext ctx_writer;
-    network::FIN *fin_resp = new network::FIN();
-    std::unique_ptr<grpc::ClientWriter<network::PDU>> writer(stub->Send(&ctx_writer, fin_resp));
 
     while (true)
     {
@@ -490,13 +496,44 @@ void TCComm::send()
         write_pdu.add_fwd_names(replyaddr);
         write_pdu.add_msg(out_msg);
 
-        writer->Write(write_pdu);
+        {
+            const std::lock_guard<std::mutex> wlk(writer_m);
+            writer->Write(write_pdu);
+        }
     }
 
 
     // Unreachable?
     writer->WritesDone();
     writer->Finish();
+}
+
+void TCComm::send_reply()
+{
+    while (true)
+    {
+        std::string out_msg = this->srv->serve_resp_q_dequeue();
+        if (out_msg == "")
+            continue;
+
+        capsule::CapsulePDU out_ack_dc;
+        out_ack_dc.ParseFromString(out_msg);
+
+        const std::string &replyaddr = out_ack_dc.header().replyaddr();
+        Logger::log(LogLevel::DEBUG, "[DC SERVER] sending ack to replying to name: "+ replyaddr);
+
+        network::PDU write_pdu;
+        write_pdu.set_sender(tc_svc_name);
+        write_pdu.set_origin(tc_svc_name);
+        write_pdu.add_fwd_names(replyaddr);
+        write_pdu.add_msg(out_msg);
+
+        {
+            const std::lock_guard<std::mutex> wlk(writer_m);
+            writer->Write(write_pdu);
+        }
+    }
+
 }
 
 
@@ -520,7 +557,12 @@ void TCComm::recv()
         for (int i = 0; i < read_pdu.msg_size(); i++){
             // Messages can be batched
             std::string msg = read_pdu.msg(i);
-            this->srv->serve_req_q_enqueue(msg);
+            capsule::CapsulePDU test_pdu;
+            if (test_pdu.ParseFromString(msg)){
+                this->srv->mcast_q_enqueue(msg);
+            }else{
+                this->srv->serve_req_q_enqueue(msg);
+            }
             Logger::log(LogLevel::DEBUG, "[DC SERVER] Received & put a serve message: " + msg);
         }
     }

@@ -88,7 +88,8 @@ class TCComm
 {
 public:
     TCComm(const std::string tc_svc_name, const std::string tc_addr, DC_Server *srv);
-    void send();
+    void send_reply();
+    void send_ack();
     void recv();
 private:
     std::string tc_svc_name;
@@ -96,5 +97,7 @@ private:
     std::shared_ptr<grpc::Channel> channel;
     std::unique_ptr<network::NetworkExchange::Stub> stub;
     DC_Server *srv;
+
+    std::shared_ptr<grpc::ClientWriter<network::PDU>> writer;
 };
 #endif // __COMM_H

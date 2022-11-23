@@ -86,7 +86,8 @@ private:
     int thread_handle_pairing_msg();
 
     /* Towncrier */
-    int thread_tc_send();
+    int thread_tc_send_ack();
+    int thread_tc_send_reply();
     int thread_tc_recv();
 };
 
