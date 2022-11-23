@@ -1,4 +1,6 @@
-FROM grpc/cxx
+ARG debian_snapshot=buster-20201012
+
+FROM debian/snapshot:${debian_snapshot}
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -12,6 +14,20 @@ RUN apt-get update && \
     apt-get install -y librocksdb-dev && \
     apt-get install -y libgflags-dev && \
     apt-get install -y libssl-dev
+
+RUN apt-get install -y autoconf libtool pkg-config
+RUN git clone --recurse-submodules -b v1.50.0 --depth 1 --shallow-submodules https://github.com/grpc/grpc /var/lib/grpc
+RUN mkdir -p /var/lib/grpc/cmake/build
+
+WORKDIR /var/lib/grpc/cmake/build
+
+RUN cmake -DgRPC_INSTALL=ON \
+    -DgRPC_BUILD_TESTS=OFF \
+    -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    ../..
+
+RUN make -j
+RUN make install
 
 #install cmake v3.20.4
 ADD https://cmake.org/files/v3.20/cmake-3.20.4-linux-x86_64.sh /cmake-3.20.4-linux-x86_64.sh

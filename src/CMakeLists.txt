@@ -17,7 +17,7 @@ find_package(Protobuf REQUIRED)
 find_package(PkgConfig)
 ## use pkg-config to get hints for 0mq locations
 pkg_check_modules(PC_ZeroMQ QUIET zmq)
-pkg_check_modules(PC_gRPC QUIET IMPORTED_TARGET grpc++)
+pkg_check_modules(PC_gRPC REQUIRED IMPORTED_TARGET grpc++)
 
 # Openssl
 find_package(OpenSSL REQUIRED)
