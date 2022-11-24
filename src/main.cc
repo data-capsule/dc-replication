@@ -58,13 +58,13 @@ int main(int argc, char *argv[])
 #if OUTGOING_MODE == 2
     if (HAS_LEADER_LOCAL)
     {
-        server_threads.push_back(std::thread(thread_dc_server, LEADER_ID_LOCAL, /* is_leader */ true, argv[1], argv[2]));
+        server_threads.push_back(std::thread(thread_dc_server, LEADER_ID_LOCAL, /* is_leader */ true, std::string(argv[1]) + std::to_string(id), argv[2]));
     }
 #endif
 
     for (int64_t id = INIT_DC_SERVER_ID; id < LOCAL_DC_SERVER_COUNT + INIT_DC_SERVER_ID; id++)
     {
-        server_threads.push_back(std::thread(thread_dc_server, id, /* is_leader */ false, argv[1], argv[2]));
+        server_threads.push_back(std::thread(thread_dc_server, id, /* is_leader */ false, std::string(argv[1]) + std::to_string(id), argv[2]));
     }
 
 #if HAS_LOCAL_DC_CLIENT 

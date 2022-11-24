@@ -521,7 +521,7 @@ void TCComm::send_reply()
         out_ack_dc.ParseFromString(out_msg);
 
         const std::string &replyaddr = out_ack_dc.header().replyaddr();
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] sending ack to replying to name: "+ replyaddr);
+        Logger::log(LogLevel::DEBUG, "[DC SERVER] replying to name: "+ replyaddr);
 
         network::PDU write_pdu;
         write_pdu.set_sender(tc_svc_name);
