@@ -219,37 +219,37 @@ void Comm::run_dc_server_send_ack_to_replyaddr() // only run when OUTGOING_MODE 
 {
     std::unordered_map<std::string, zmq::socket_t *> socket_send_ack_map;
 
-    while (true)
-    {
-        std::string out_msg = this->m_dc_server->ack_q_dequeue();
-        if (out_msg == "")
-            continue;
-
-        capsule::CapsulePDU out_ack_dc;
-        out_ack_dc.ParseFromString(out_msg);
-
-        const std::string &replyaddr = out_ack_dc.header().replyaddr();
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] sending ack to replyaddr: "+ replyaddr);
-
-        // check if replyaddr is in socket_send_ack_map, if not, create a new connection
-        auto got = socket_send_ack_map.find(replyaddr);
-        if ( got == socket_send_ack_map.end() )
-        {
-            zmq::socket_t *socket_send_ack = new zmq::socket_t(m_context, ZMQ_PUSH);
-            socket_send_ack->connect("tcp://" + replyaddr);
-            socket_send_ack_map[replyaddr] = socket_send_ack;
-            Logger::log(LogLevel::DEBUG, "[DC SERVER] Connected to Client for ack. Addr: "+ replyaddr);
-        }
-
-        this->send_string(out_msg, socket_send_ack_map[replyaddr]);
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] Sent an ack msg: " + out_msg +
-                                         " to client: " + replyaddr);
-    }
-
-    for (auto &p : socket_send_ack_map)
-    {
-        delete p.second;
-    }
+//    while (true)
+//    {
+//        std::string out_msg = this->m_dc_server->ack_q_dequeue();
+//        if (out_msg == "")
+//            continue;
+//
+//        capsule::CapsulePDU out_ack_dc;
+//        out_ack_dc.ParseFromString(out_msg);
+//
+//        const std::string &replyaddr = out_ack_dc.header().replyaddr();
+//        Logger::log(LogLevel::DEBUG, "[DC SERVER] sending ack to replyaddr: "+ replyaddr);
+//
+//        // check if replyaddr is in socket_send_ack_map, if not, create a new connection
+//        auto got = socket_send_ack_map.find(replyaddr);
+//        if ( got == socket_send_ack_map.end() )
+//        {
+//            zmq::socket_t *socket_send_ack = new zmq::socket_t(m_context, ZMQ_PUSH);
+//            socket_send_ack->connect("tcp://" + replyaddr);
+//            socket_send_ack_map[replyaddr] = socket_send_ack;
+//            Logger::log(LogLevel::DEBUG, "[DC SERVER] Connected to Client for ack. Addr: "+ replyaddr);
+//        }
+//
+//        this->send_string(out_msg, socket_send_ack_map[replyaddr]);
+//        Logger::log(LogLevel::DEBUG, "[DC SERVER] Sent an ack msg: " + out_msg +
+//                                         " to client: " + replyaddr);
+//    }
+//
+//    for (auto &p : socket_send_ack_map)
+//    {
+//        delete p.second;
+//    }
 }
 
 void Comm::run_dc_server_send_ack_to_leader() // only run when OUTGOING_MODE == 2
@@ -304,36 +304,36 @@ void Comm::run_dc_server_send_serve_resp()
 {
     std::unordered_map<std::string, zmq::socket_t *> socket_send_serve_resp_map;
 
-    while (true)
-    {
-        std::string out_msg = this->m_dc_server->serve_resp_q_dequeue();
-        if (out_msg == "")
-            continue;
-
-        capsule::ClientGetResponse serve_resp;
-        serve_resp.ParseFromString(out_msg);
-
-        const std::string &target_addr = serve_resp.targetaddr();
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] target_addr for get resp: "+ target_addr);
-
-        // check if target_addr is in socket_send_serve_resp_map, if not, create a new connection
-        auto got = socket_send_serve_resp_map.find(target_addr);
-        if ( got == socket_send_serve_resp_map.end() )
-        {
-            zmq::socket_t *socket_send_serve_resp = new zmq::socket_t(m_context, ZMQ_PUSH);
-            socket_send_serve_resp->connect("tcp://" + target_addr);
-            socket_send_serve_resp_map[target_addr] = socket_send_serve_resp;
-            Logger::log(LogLevel::DEBUG, "[DC SERVER] Connected to Client for get responses. Addr: "+ target_addr);
-        }
-        this->send_string(out_msg, socket_send_serve_resp_map[target_addr]);
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] Sent a get response msg: " + out_msg +
-                                         " to client: " + target_addr);
-    }
-
-    for (auto &socket : socket_send_serve_resp_map)
-    {
-        delete socket.second;
-    }
+//    while (true)
+//    {
+//        std::string out_msg = this->m_dc_server->serve_resp_q_dequeue();
+//        if (out_msg == "")
+//            continue;
+//
+//        capsule::ClientGetResponse serve_resp;
+//        serve_resp.ParseFromString(out_msg);
+//
+//        const std::string &target_addr = serve_resp.targetaddr();
+//        Logger::log(LogLevel::DEBUG, "[DC SERVER] target_addr for get resp: "+ target_addr);
+//
+//        // check if target_addr is in socket_send_serve_resp_map, if not, create a new connection
+//        auto got = socket_send_serve_resp_map.find(target_addr);
+//        if ( got == socket_send_serve_resp_map.end() )
+//        {
+//            zmq::socket_t *socket_send_serve_resp = new zmq::socket_t(m_context, ZMQ_PUSH);
+//            socket_send_serve_resp->connect("tcp://" + target_addr);
+//            socket_send_serve_resp_map[target_addr] = socket_send_serve_resp;
+//            Logger::log(LogLevel::DEBUG, "[DC SERVER] Connected to Client for get responses. Addr: "+ target_addr);
+//        }
+//        this->send_string(out_msg, socket_send_serve_resp_map[target_addr]);
+//        Logger::log(LogLevel::DEBUG, "[DC SERVER] Sent a get response msg: " + out_msg +
+//                                         " to client: " + target_addr);
+//    }
+//
+//    for (auto &socket : socket_send_serve_resp_map)
+//    {
+//        delete socket.second;
+//    }
 }
 
 void Comm::run_dc_server_listen_pairing_msg()
@@ -463,12 +463,14 @@ void Comm::send_dc_server_pairing_response(
 TCComm::TCComm(const std::string tc_svc_name, const std::string tc_addr, DC_Server *srv)
     :tc_svc_name(tc_svc_name), tc_addr(tc_addr), srv(srv)
 {
-    channel = grpc::CreateChannel(tc_addr, grpc::InsecureChannelCredentials());
+	grpc::ChannelArguments ch_args;
+	ch_args.SetMaxReceiveMessageSize(INT_MAX);
+    ch_args.SetMaxSendMessageSize(INT_MAX);
+    channel = grpc::CreateCustomChannel(tc_addr, grpc::InsecureChannelCredentials(), ch_args);
     stub = network::NetworkExchange::NewStub(channel);
-
-    grpc::ClientContext ctx_writer;
+    ctx_writer = new grpc::ClientContext;
     network::FIN *fin_resp = new network::FIN();
-    std::shared_ptr<grpc::ClientWriter<network::PDU>> __writer(stub->Send(&ctx_writer, fin_resp));
+    std::shared_ptr<grpc::ClientWriter<network::PDU>> __writer(stub->Send(ctx_writer, fin_resp));
     writer = __writer;
 }
 
@@ -488,7 +490,7 @@ void TCComm::send_ack()
         out_ack_dc.ParseFromString(out_msg);
 
         const std::string &replyaddr = out_ack_dc.header().replyaddr();
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] sending ack to replying to name: "+ replyaddr);
+        Logger::log(LogLevel::INFO, "[DC SERVER] sending ack to replying to name: "+ replyaddr);
 
         network::PDU write_pdu;
         write_pdu.set_sender(tc_svc_name);
@@ -517,11 +519,11 @@ void TCComm::send_reply()
         if (out_msg == "")
             continue;
 
-        capsule::CapsulePDU out_ack_dc;
+        capsule::ClientGetResponse out_ack_dc;
         out_ack_dc.ParseFromString(out_msg);
 
-        const std::string &replyaddr = out_ack_dc.header().replyaddr();
-        Logger::log(LogLevel::DEBUG, "[DC SERVER] replying to name: "+ replyaddr);
+        const std::string &replyaddr = out_ack_dc.targetaddr();
+        Logger::log(LogLevel::INFO, "[DC SERVER] replying to name: "+ replyaddr);
 
         network::PDU write_pdu;
         write_pdu.set_sender(tc_svc_name);
@@ -560,9 +562,13 @@ void TCComm::recv()
             // Messages can be batched
             std::string msg = read_pdu.msg(i);
             capsule::CapsulePDU test_pdu;
+	    if (msg.size() == 0) continue;
             if (test_pdu.ParseFromString(msg)){
-                this->srv->mcast_q_enqueue(msg);
+		    Logger::log(LogLevel::INFO, ">>>>>>>>>>>>>>>>>>>>> pdu");
+		this->srv->mcast_q_enqueue(msg);
             }else{
+		    
+		    Logger::log(LogLevel::INFO, ">>>>>>>>>>>>>>>>>>>>> req_q");
                 this->srv->serve_req_q_enqueue(msg);
             }
             Logger::log(LogLevel::DEBUG, "[DC SERVER] Received & put a serve message: " + msg);

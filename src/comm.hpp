@@ -97,7 +97,8 @@ private:
     std::shared_ptr<grpc::Channel> channel;
     std::unique_ptr<network::NetworkExchange::Stub> stub;
     DC_Server *srv;
-
+    
+    grpc::ClientContext *ctx_writer;
     std::shared_ptr<grpc::ClientWriter<network::PDU>> writer;
 };
 #endif // __COMM_H

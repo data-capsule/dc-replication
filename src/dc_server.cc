@@ -139,10 +139,11 @@ int DC_Server::thread_handle_mcast_msg()
     while (true)
     {
         std::string in_msg = mcast_q_dequeue();
+        //Logger::log(LogLevel::INFO, std::string(">>>>> Received a mcast msg: ") + in_msg);
         if (in_msg == "")
             continue;
 
-        Logger::log(LogLevel::DEBUG, "Received a mcast msg: "); //+ in_msg);
+        Logger::log(LogLevel::INFO, "Received a mcast msg: "); //+ in_msg);
 
         capsule::CapsulePDU in_dc;
         in_dc.ParseFromString(in_msg);
@@ -305,6 +306,7 @@ int DC_Server::thread_handle_serve_request_msg()
             Logger::log(LogLevel::DEBUG, "Received a hash-based read request");
 
             std::string hash = in_req.hash();
+	    Logger::log(LogLevel::INFO, "hash is" + hash + " Length: " + std::to_string(hash.size()));
             capsule::CapsulePDU dc_to_return;
             bool succ = storage.get(hash, &dc_to_return);
 

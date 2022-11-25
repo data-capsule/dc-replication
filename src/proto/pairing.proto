@@ -6,12 +6,12 @@ import "capsule.proto";
 
 message PairingRequest {
 
-  repeated string sources = 1;
-  repeated string sinks = 2;
+  repeated bytes sources = 1;
+  repeated bytes sinks = 2;
 
   string replyAddr = 3;
 
-  repeated string hashes = 4; // Used for base line anti-entropy
+  repeated bytes hashes = 4; // Used for base line anti-entropy
 }
 
 message PairingResponse {
