@@ -10,6 +10,8 @@ message ClientGetRequest {
   string replyAddr = 2;
 
   bool fresh_req = 3;
+  optional bool metaonly_req = 4;
+  int32 magic = 5;
 
 }
 

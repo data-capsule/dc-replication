@@ -561,15 +561,14 @@ void TCComm::recv()
         for (int i = 0; i < read_pdu.msg_size(); i++){
             // Messages can be batched
             std::string msg = read_pdu.msg(i);
-            capsule::CapsulePDU test_pdu;
-	    if (msg.size() == 0) continue;
-            if (test_pdu.ParseFromString(msg)){
-		    Logger::log(LogLevel::INFO, ">>>>>>>>>>>>>>>>>>>>> pdu");
-		this->srv->mcast_q_enqueue(msg);
-            }else{
-		    
-		    Logger::log(LogLevel::INFO, ">>>>>>>>>>>>>>>>>>>>> req_q");
+            capsule::ClientGetRequest test_req;
+            if (msg.size() == 0) continue;
+            if (test_req.ParseFromString(msg) && test_req.magic() == GET_REQUEST_MAGIC){
+                Logger::log(LogLevel::INFO, ">>>>>>>>>>>>>>>>>>>>> req_q");
                 this->srv->serve_req_q_enqueue(msg);
+            }else{
+                Logger::log(LogLevel::INFO, ">>>>>>>>>>>>>>>>>>>>> pdu");
+                this->srv->mcast_q_enqueue(msg);
             }
             Logger::log(LogLevel::DEBUG, "[DC SERVER] Received & put a serve message: " + msg);
         }

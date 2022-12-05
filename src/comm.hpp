@@ -20,6 +20,8 @@
 
 #include "config.h"
 
+#define GET_REQUEST_MAGIC 0xcafebabe
+
 class DC_Server; // Forward Declaration to avoid circular dependency
 
 class Comm
