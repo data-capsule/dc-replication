@@ -7,7 +7,7 @@ import "capsule.proto";
 message ClientGetRequest {
 
   bytes hash = 1;
-  string replyAddr = 2;
+  bytes replyAddr = 2;
 
   bool fresh_req = 3;
   optional bool metaonly_req = 4;
